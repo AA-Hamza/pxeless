@@ -27,6 +27,7 @@ export_metadata(){
         export USE_RELEASE_ISO=0
         export EXTRA_FILES_FOLDER=""
         export OFFLINE_INSTALLER=""
+        export GRUB_CREDENTIALS=""
 
         export LEGACY_IMAGE=0
         export CURRENT_RELEASE=""
@@ -87,6 +88,8 @@ Available options:
                           created, overwriting any existing file.
 -o, --offline-installer   Run a bash script to customize image, including install packages and configuration.
                           It should be used with -x, and the bash script should be avilable in the same extras directory.
+
+-g, --grub-credentials    Setup credentials to be used in grub to allow only authorized people to install.
 EOF
         exit
 }
@@ -130,6 +133,10 @@ parse_params() {
                         ;;
                 -o | --offline-installer)
                         OFFLINE_INSTALLER="${2-}"
+                        shift
+                        ;;
+                -g | --grub-credentials)
+                        GRUB_CREDENTIALS="${2-}"
                         shift
                         ;;
                 -?*) die "Unknown option: $1" ;;
@@ -332,6 +339,16 @@ set_kernel_autoinstall(){
         log "🧩 Adding autoinstall parameter to kernel command line..."
         sed -i -e 's/---/ autoinstall  ---/g' "${BUILD_DIR}/boot/grub/grub.cfg"
         sed -i -e 's/---/ autoinstall  ---/g' "${BUILD_DIR}/boot/grub/loopback.cfg"
+
+
+        if [ -n "${GRUB_CREDENTIALS}" ]; then
+          log "🧩 Configuring grub credentials..."   
+          USERNAME=$(echo "${GRUB_CREDENTIALS}" | sed 's/:.*//')
+          PASSWORD=$(echo "${GRUB_CREDENTIALS}" | sed 's/.*://')
+          echo "set superusers=\"${USERNAME}\"" >> "${BUILD_DIR}/boot/grub/grub.cfg"
+          echo "password ${USERNAME} ${PASSWORD}" >> "${BUILD_DIR}/boot/grub/grub.cfg"
+          echo "export superusers" >> "${BUILD_DIR}/boot/grub/grub.cfg"
+        fi
 
         if [ -f "${BUILD_DIR}/isolinux/txt.cfg" ]; then   
                 log "🧩 Adding autoinstall parameter to isolinux..."   

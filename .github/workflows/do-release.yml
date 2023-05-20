@@ -39,7 +39,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            deserializeme/pxeless
+            aahamza/pxeless
           tags: |
             "${{github.event.inputs.release_version}}"
           

@@ -15,7 +15,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: deserializeme/pxeless
+          images: aahamza/pxeless
           tags: latest
       -
         name: Login to DockerHub
