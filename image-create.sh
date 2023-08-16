@@ -407,8 +407,14 @@ insert_extra_files(){
         sudo cp -R "${EXTRA_FILES_FOLDER}/." "squashfs-root/media/"
 
         if [ -n "$OFFLINE_INSTALLER" ]; then
+                log "Bind /dev/null"
+                sudo mount --bind /dev/null squashfs-root/dev/null
+                log "Enabling internet connection"
+                sudo cp /etc/resolv.conf squashfs-root/etc/resolv.conf
                 log " - Step 3.5. Runing offline installer script..."
                 sudo chroot squashfs-root/ /bin/bash "/media/${OFFLINE_INSTALLER}"
+                log "Unbinding /dev/null"
+                sudo umount squashfs-root/dev/null
         fi
 
         log " - Step 4. Rebuilding squashfs.."
